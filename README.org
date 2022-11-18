@@ -1,5 +1,13 @@
 #+TITLE: Org-Mode Marking & Integrations for the Canvas LMS
 
+
+The Canvas API includes hundreds of models/etc, but this is not hard for
+me. This is easy: [[https://github.com/davidmoten/openapi-to-plantuml][davidmoten/openapi-to-plantuml]]. It has always been easy for
+me. I find the most potent, distilled docs I can.
+
+Emacs lisp, on the other hand is hard, especially with a moving target like
+Canvas LMS.
+
 * Intro
 
 This repository includes *generic functions for interacting with the Canvas LMS* as well as *instructions for a highly individualized and specific grading setup.* Where possible I have tried to distinguish between the two but there are still places where I have not adequately separated them.  
