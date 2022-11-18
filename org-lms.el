@@ -2008,7 +2008,7 @@ resultant csv file has a certain shape, bu this may all be irrelevant now."
                             ("BASECOMMIT" . ,basecommit) ;; it would be better to keep this in the parent
                             ("ORG_LMS_ASSIGNMENT_DIRECTORY" . ,directory)
                             ;; ("MAIL_CC" . "matt.price@utoronto.ca")
-                            ("MAIL_REPLY" . "matt.price@utoronto.ca")
+                            ("MAIL_REPLY" . (or user-mail-address "matt.price@utoronto.ca"))
                             ("MAIL_SUBJECT" .
                              ,(format "%sComments on Assignment \"%s\" (%s %s)"
                                       (if coursenum
@@ -2200,7 +2200,7 @@ the structure of the the alist, and the means of attachment
                                         prs)
                               )
                             ;; (org-set-property "MAIL_CC" "matt.price@utoronto.ca")
-                            (org-set-property "MAIL_REPLY" "matt.price@utoronto.ca")
+                            (org-set-property "MAIL_REPLY" (or user-mail-address "matt.price@utoronto.ca"))
                             (org-set-property "MAIL_SUBJECT"
                                               (format "Comments on %s Assignment (%s %s)"
                                                       (mwp-org-get-parent-headline) nname lname ))
@@ -2469,7 +2469,7 @@ The cursor is left in the TO field."
             )
 			  (kill-buffer html-buf)))
 	     ;; (body (concat org-body "\n" html-body))
-       (body org-body))
+             (body org-body))
 	(save-restriction
 	  (org-narrow-to-subtree)
 	  (org-lms-mime-compose body file to subject other-headers
@@ -2484,8 +2484,7 @@ The cursor is left in the TO field."
         (dolist (a attachments)  (mml-attach-file a (mm-default-file-encoding a) nil "attachment"))
 
 	(message-goto-to)
-        (message-send-and-exit)
-        ))))
+        (message-send-and-exit)))))
 
 (defun org-lms-mime-compose (body file &optional to subject headers opts addressee)
   "Create mail BODY in FILE with TO, SUBJECT, HEADERS and OPTS."
@@ -2827,7 +2826,7 @@ Simultaneously write results to results.csv in current directory."
                          ("MAIL_TO" . ,email)
                          ("GITHUB" . ,github)
                          ;; ("STUDENTID" . ,id)
-                         ("MAIL_REPLY" . "matt.price@utoronto.ca")
+                         ("MAIL_REPLY" . (or user-mail-address "matt.price@utoronto.ca"))
                          ("MAIL_SUBJECT" .
                           ,(format "%s Grades Summary"
                                    (if coursenum
