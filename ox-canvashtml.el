@@ -1,5 +1,12 @@
+;; [[file:ox-canvashtml.org::*Requirements][Requirements:1]]
 (require  'ox-html)
+;; Requirements:1 ends here
 
+;; [[file:ox-canvashtml.org::*Add a link type for internal canvas links][Add a link type for internal canvas links:1]]
+;;; ol-canvas.el - Support for links to man pages in Org mode
+;; Add a link type for internal canvas links:1 ends here
+
+;; [[file:ox-canvashtml.org::*define the derived backend][define the derived backend:1]]
 (org-export-define-derived-backend 'canvas-html 'html
   :translate-alist '((template . canvas-html-template)
                      (inner-template . org-canvas-html-inner-template)
@@ -15,7 +22,9 @@
 		(org-open-file (org-canvas-html-export-to-html nil s v b)))))))
 
   )
+;; define the derived backend:1 ends here
 
+;; [[file:ox-canvashtml.org::*Replace the section function][Replace the section function:1]]
 ;;;; Section
 
 (defun org-canvas-html-section (section contents info)
@@ -42,7 +51,11 @@ holding contextual information."
 		      section-number
 		      (org-export-get-reference parent info))
 		  (or contents "")))))))
+;; Replace the section function:1 ends here
 
+;; [[file:ox-canvashtml.org::*Define some options here][Define some options here:1]]
+
+;; [[file:ox-canvashtml.org::*Unfortunately, have to replace the headline function too :-(][Unfortunately, have to replace the headline function too :-(:1]]
 ;;;; Headline
 
 (defun org-canvas-html-headline (headline contents info)
@@ -116,7 +129,9 @@ holding contextual information."
                   (if (eq (org-element-type first-content) 'section) contents
                     (concat (org-canvas-html-section first-content "" info) contents))
                   (org-html--container headline info)))))))
+;; Unfortunately, have to replace the headline function too :-(:1 ends here
 
+;; [[file:ox-canvashtml.org::*Add the template functions][Add the template functions:1]]
 (defun canvas-html-template (contents info)
   "Since <head> will in any case be stripped out,
 return just the body with an extra CSS tag"
@@ -175,8 +190,9 @@ holding export options."
     (with-temp-buffer
       (insert-file-contents tempFile)
       (buffer-string))))
+;; Add the template functions:1 ends here
 
-
+;; [[file:ox-canvashtml.org::*Add the export-to and export-as functions][Add the export-to and export-as functions:1]]
 ;;; End-user functions
 
 ;;;###autoload
@@ -261,5 +277,8 @@ Return output file's name."
     ;; (call-process "juice" nil "*juice-process*" nil file file)
     ;;file
     ))
+;; Add the export-to and export-as functions:1 ends here
 
+;; [[file:ox-canvashtml.org::*Provide the library][Provide the library:1]]
 (provide 'ox-canvashtml)
+;; Provide the library:1 ends here

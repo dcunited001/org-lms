@@ -1,3 +1,4 @@
+;; [[file:org-lms.org::*Package intro][Package intro:1]]
 ;;; org-lms -- Summary
 ;;;
 ;;; Commentary:
@@ -6,10 +7,12 @@
 ;;; JSON API (https://canvas.instructure.com/doc/api/).
 ;;;
 ;;; Functionality is still rough and design is idiosyncratic. I hope to
-;;; one day design a more robusti nterface but... who know? 
+;;; one day design a more robust interface but... who knows? :)
 
 ;;; Code:
+;; Package intro:1 ends here
 
+;; [[file:org-lms.org::*Dependencies][Dependencies:1]]
 ;; require the dependencies
 (require 'org) ;; the source of all good!
 (require 'org-attach) ;; for attaching files to emails
@@ -24,19 +27,23 @@
 ;; (require 's) ;; modern strings
 ;; (require 'org-ql) ;; faster, easier query syntax
 ;;(require 'ov) ;; for grade overlays
+;; Dependencies:1 ends here
 
+;; [[file:org-lms.org::*Define obsolete functions][Define obsolete functions:1]]
 (define-obsolete-function-alias 'org-lms-send-subtree-with-attachments
-    'org-lms~send-subtree-with-attachments "a pretty long time ago")
+    'org-lms--send-subtree-with-attachments "a pretty long time ago")
 (define-obsolete-function-alias 'org-lms-mail-all-undone 
     'org-lms-mail-all "a pretty long time ago")
 (define-obsolete-function-alias 'org-lms-parse-assignment 
     'org-lms-post-assignment "2021-06-20" "calling this`parse` was misleading")
+;; Define obsolete functions:1 ends here
 
+;; [[file:org-lms.org::*Variable definitions][Variable definitions:1]]
 ;; variables
-  ;; most of these are used for canvas interactions...
+;; most of these are used for canvas interactions...
 
-  (defvar org-lms-courses nil
-    "Alist in which each car is a symbol, and each cdr is a plist.
+(defvar org-lms-courses nil
+  "Alist in which each car is a symbol, and each cdr is a plist.
 
   Value of this variable must be set beforeusing the library. The
   plist should include at least the following attributes in order
@@ -47,38 +54,44 @@
   - `:semester'
   ")
 
-  (defcustom org-lms-baseurl nil
-    "Baseurl for canvas API queries. 
+(defcustom org-lms-baseurl nil
+  "Baseurl for canvas API queries. 
     Should have the form \"https://canvas.instance.at.school/api/v1/\"."
-    :type '(string)
-    )
+  :type '(string)
+  )
 
-  (defcustom org-lms-token nil
-    "Secret oauth token for Canvas. DO NOT SHARE THIS INFO.
+(defcustom org-lms-public-baseurl nil
+  "Baseurl for canvas API queries. 
+    Should have the form \"https://canvas.instance.at.school/api/v1/\"."
+  :type '(string)
+  )
+
+(defcustom org-lms-token nil
+  "Secret oauth token for Canvas. DO NOT SHARE THIS INFO.
     Probably customize is a rotten place to put this!"
-    :type '(string))
+  :type '(string))
 
-  (defvar-local org-lms-course nil
-    "Locally-set variable representing the local course.")
+(defvar-local org-lms-course nil
+  "Locally-set variable representing the local course.")
 
-  (defvar-local org-lms-local-assignments nil
-    "List of assignments for the current course. 
+(defvar-local org-lms-local-assignments nil
+  "List of assignments for the current course. 
 
     Intended to be updated automatically somehow, but for now just
     being set in grading page")
 
-  (defvar-local org-lms-merged-assignments nil
-    "Buffer-local plist of students in this course, merging cnavas and local info. 
+(defvar-local org-lms-merged-assignments nil
+  "Buffer-local plist of students in this course, merging cnavas and local info. 
 
     Intended to be set automatically. Should always be buffer-local")
 
-  (defvar-local org-lms-local-students nil
-    "Buffer-local plist of students in this course, using local csv file. 
+(defvar-local org-lms-local-students nil
+  "Buffer-local plist of students in this course, using local csv file. 
 
     Intended to be set automatically. Should always be buffer-local")
 
-  (defvar-local org-lms-merged-students nil
-    "Buffer-local plist of students in this course, merging cnavas and local info. 
+(defvar-local org-lms-merged-students nil
+  "Buffer-local plist of students in this course, merging cnavas and local info. 
 
     Intended to be set automatically. Should always be buffer-local")
 (defcustom ol-make-headings-final-hook nil
@@ -89,6 +102,9 @@
   "https://dx.doi.org/"
   "Local DOI resolver for student bibliography links")
 
+;; in the syllabus, "citations" are actually full bibliography entries.
+;; therefore, don't wrap them in links that will create useless HTML
+;; and probably also don't create a full biblipgraphy. 
 (defcustom org-lms-citeproc-fmt-alist
   ;; oops, requires dash library!!
   (and (boundp 'citeproc-fmt--html-alist)
@@ -112,6 +128,12 @@
   "Get global org property KEY of current buffer."
   (org-element-property :value (car (org-lms-global-props key))))
 
+;; Variable definitions:1 ends here
+
+;; [[file:org-lms.org::*Read global values of org file][Read global values of org file:1]]
+;; Read global values of org file:1 ends here
+
+;; [[file:org-lms.org::*Reading keywords in org files][Reading keywords in org files:1]]
 ;; john kitchin's version
 ;; (defun org-lms-get-keyword (key &optional buffer)
 
@@ -254,6 +276,9 @@ coded, but works."
                              (line-beginning-position) (line-end-position)) ","))
             )
        (message "CSV PARSER: headerprops ;; %s" (buffer-string))
+;; Reading keywords in org files:1 ends here
+
+;; [[file:org-lms.org::*CSV Parsers][CSV Parsers:1]]
         (while (not (eobp))
           (let ((line  (split-string (buffer-substring-no-properties
                                       (line-beginning-position) (line-end-position)) ","))
@@ -316,6 +341,9 @@ but works."
       ;; (message "PARSER: result -- %s" result)
       (cdr (reverse result)))))
 
+;; CSV Parsers:1 ends here
+
+;; [[file:org-lms.org::*Miscellaneous Helper functions][Miscellaneous Helper functions:1]]
 ;; Element tree navigation
 ;; not sure but I don't think I use this anymore
 ;; also trying to avoid relying on parental properties
@@ -356,7 +384,9 @@ but works."
       (add-to-list 'result (cons (intern (substring  (symbol-name (car ls)) 1 )) (cadr ls)))
       (setq ls (cddr ls)))
     result))
+;; Miscellaneous Helper functions:1 ends here
 
+;; [[file:org-lms.org::*JSON helpers and wrappers][JSON helpers and wrappers:1]]
 ;; number-to-string was driving me crazy 
 
 
@@ -405,14 +435,18 @@ default values are:
        (concat result "]")))
    )
   )
+;; JSON helpers and wrappers:1 ends here
 
+;; [[file:org-lms.org::*Read-lines: Belongs up with the utility functions][Read-lines: Belongs up with the utility functions:1]]
 ;; stolen from xah, http://ergoemacs.org/emacs/elisp_read_file_content.html
 (defun org-lms~read-lines (filePath)
   "Return a list of lines of a file at filePath."
   (with-temp-buffer
     (insert-file-contents filePath)
     (split-string (buffer-string) "\n" t)))
+;; Read-lines: Belongs up with the utility functions:1 ends here
 
+;; [[file:org-lms.org::lms-process][lms-process]]
 (defun org-lms-process-props () 
 "retrieve all properties in a headline, then downcase and standardize the key names so that they are convenient to use with `let-alist`"
 (cl-loop for (key . value) in (org-entry-properties)
@@ -449,7 +483,9 @@ which see for more details"
               )
             
    ))
+;; lms-process ends here
 
+;; [[file:org-lms.org::*Deal with timestamps][Deal with timestamps:1]]
 (require 'ts)
 (defun o-l-date-to-timestamp (date)
   "use ts.el date parse functions return an ISO-compatible
@@ -457,7 +493,9 @@ timestamp for transmission to Canvas via API. DATE is a string,
 usually of the form `2019-09-26`, but optionally including a full time."
 
   (ts-format "%Y-%m-%dT%H:%M:%S%:z" (ts-parse-fill 'end date )))
+;; Deal with timestamps:1 ends here
 
+;; [[file:org-lms.org::*Generic get-valid-subtree function.][Generic get-valid-subtree function.:1]]
 (defun org-lms--get-valid-subtree ()
   "Return the Org element for a valid Hugo post subtree.
 The condition to check validity is that the EXPORT_FILE_NAME
@@ -481,7 +519,12 @@ will be moved in this case too."
         ;; and return nil
         (unless level
           (throw 'break nil))))))
+;; Generic get-valid-subtree function.:1 ends here
 
+;; [[file:org-lms.org::*Filter attachments][Filter attachments:1]]
+;; Filter attachments:1 ends here
+
+;; [[file:org-lms.org::*Basic "request" function][Basic "request" function:1]]
 ;; talking to canvas via API v1: https://canvas.instructure.com/doc/api/ 
 
 (defun org-lms-canvas-request (query &optional request-type request-params file)
@@ -539,8 +582,10 @@ will be moved in this case too."
                  (message (format "NO PAYLOAD: %s" canvas-err)) )
                (or (request-response-data thisrequest) thisrequest) )
       (user-error "Please set a value for for `org-lms-token' in order to complete API calls"))))
+;; Basic "request" function:1 ends here
 
 (defun org-lms-get-courseids (&optional file)
+;; [[file:org-lms.org::*Getters][Getters:1]]
     "Get list of JSON courses and produce a simplified list with just ids and names, for convenience.
   Optionally write JSON output to FILE."
     (let ((result (org-lms-get-courses file)))
@@ -592,7 +637,9 @@ will be moved in this case too."
                     (org-lms-set-keyword "ORG_LMS_COURSE" (plist-get result :id))))))
       (or result
           (user-error "No course in Canvas matches definition of %s" course))))
+;; Getters:1 ends here
 
+;; [[file:org-lms.org::*Setter][Setter:1]]
 (defun org-lms-post-syllabus (&optional courseid subtreep)
   "Post  syllabus to course"
   (interactive)
@@ -641,6 +688,9 @@ will be moved in this case too."
     (message "Response: %s" response)
     response
     ))
+;; Setter:1 ends here
+
+;; [[file:org-lms.org::*Custom Gradebook Columns][Custom Gradebook Columns:1]]
 
 (defun org-lms-post-gb-column (title &optional columnid position teachernotes courseid)
     (setq courseid (or courseid (org-lms-get-keyword "ORG_LMS_COURSEID") (plist-get org-lms-course)))
@@ -676,7 +726,9 @@ Data should be a list of 3-cell alists, in which the values of `column_id',
    (format "courses/%s/custom_gradebook_column_data" courseid ) "PUT" data 
    )
   )
+;; Custom Gradebook Columns:1 ends here
 
+;; [[file:org-lms.org::*Getters][Getters:1]]
 (defun org-lms-get-students (&optional courseid)
     "Retrieve Canvas student data for course with id COUSEID"
     (let* ((courseid (or courseid (org-lms-get-keyword "ORG_LMS_COURSEID")))
@@ -712,7 +764,9 @@ Data should be a list of 3-cell alists, in which the values of `column_id',
                do
                (setq result s))
       result))
+;; Getters:1 ends here
 
+;; [[file:org-lms.org::*Transformer -- merging student lists][Transformer -- merging student lists:1]]
 ;; fix broken symbol not keyword assignment!!!
 (defun org-lms-merge-student-lists (&optional local canvas)
   "Merge student lists, optionally explicity named as LOCAL and CANVAS."
@@ -745,7 +799,9 @@ Data should be a list of 3-cell alists, in which the values of `column_id',
                  )))))
   (with-temp-file "students-merged.json" (insert  (ol-write-json-plists canvas)))
   canvas)
+;; Transformer -- merging student lists:1 ends here
 
+;; [[file:org-lms.org::*Getter -- get all pages][Getter -- get all pages:1]]
 (defun org-lms-get-all-pages () 
 "get all pages as a list of plists"
 (interactive)
@@ -760,7 +816,9 @@ Data should be a list of 3-cell alists, in which the values of `column_id',
                    concat (format "- [[%s][%s]]\n" (plist-get p :html_url)(plist-get p :title))
                    )))
     orgList))
+;; Getter -- get all pages:1 ends here
 
+;; [[file:org-lms.org::*Setter -- create page][Setter -- create page:1]]
 (defun org-lms-post-page ()
   "Extract page data from HEADLINE.
   HEADLINE is an org-element object."
@@ -811,7 +869,9 @@ Data should be a list of 3-cell alists, in which the values of `column_id',
         (if (plist-get response-data :html_url)
             (browse-url (plist-get response-data :html_url)))
         response))))
+;; Setter -- create page:1 ends here
 
+;; [[file:org-lms.org::*Getters][Getters:1]]
 (defun org-lms-file-post-request (query   request-params path)
   "Send QUERY to `org-lms-baseurl' with http request type POST
   Also send REQUEST-PARAMS as JSON data.  
@@ -937,7 +997,9 @@ working on this."
       ;;(f-write-text thiscommand 'utf-8 "~/src/org-grading/filecurlcommand.sh")
       curlres
       )))
+;; Getters:1 ends here
 
+;; [[file:org-lms.org::*Getters][Getters:2]]
 (defun org-lms-get-folders (&optional courseid)
   (unless courseid
     (setq courseid (org-lms-get-keyword "ORG_LMS_COURSEID")))
@@ -967,7 +1029,9 @@ working on this."
   (setq courseid (or courseid (org-lms-get-keyword "ORG_LMS_COURSEID")
                      ))
   (org-lms-canvas-request (format "courses/%s/modules/%s/items/%s" courseid moduleid itemid) "GET" '(("include" . "content_details" ))))
+;; Getters:2 ends here
 
+;; [[file:org-lms.org::*Setters][Setters:1]]
 (defun org-lms-set-folder (params)
   "Create a folder from params"
   (interactive)
@@ -997,7 +1061,9 @@ working on this."
             params)))
     (response-data (or response nil))
     ))
+;; Setters:1 ends here
 
+;; [[file:org-lms.org::*Getters][Getters:1]]
 (defun org-lms-get-modules (&optional courseid)
   (unless courseid
     (setq courseid (org-lms-get-keyword "ORG_LMS_COURSEID")))
@@ -1028,7 +1094,9 @@ working on this."
   (setq courseid (or courseid (org-lms-get-keyword "ORG_LMS_COURSEID")
                      ))
   (org-lms-canvas-request (format "courses/%s/modules/%s/items/%s" courseid moduleid itemid) "GET" '(("include" . "content_details" ))))
+;; Getters:1 ends here
 
+;; [[file:org-lms.org::*Setters][Setters:1]]
 ;; -🔰in front of course documents\\
 ;; -💯in front of assessments\\
 ;; 📖in front of core texts\\
@@ -1193,7 +1261,9 @@ working on this."
             (message "did not receive module item response-data"))
           response)
       (message "Please ensure that MODULE and MODULE_ITEM_TYPE are both set"))))
+;; Setters:1 ends here
 
+;; [[file:org-lms.org::*Assignments][Assignments:1]]
 (defun org-lms-get-assignments (&optional courseid)
   (unless courseid
     (setq courseid (org-lms-get-keyword "ORG_LMS_COURSEID")))
@@ -1238,6 +1308,7 @@ working on this."
 
                        (add-to-list 'result `(,(car l) .  ,defn)))))))
     result))
+;; Assignments:1 ends here
 
 (defun org-lms-get-submissions (&optional courseid)
   "get all submisisons in a COURSE (rarely used)."
@@ -1257,7 +1328,9 @@ STUDENTID identifies the student, ASSIGNMENTID the assignment, and COURSEID the 
   (setq courseid (or courseid (org-lms-get-keyword "ORG_LMS_COURSEID") (plist-get org-lms-course)))
   (org-lms-canvas-request
    (format "courses/%s/assignments/%s/submissions/%s" courseid assignmentid studentid) "GET"))
+;; Submissions:1 ends here
 
+;; [[file:org-lms.org::*Attachments][Attachments:1]]
 (defun org-lms-get-canvas-attachments ()
   (interactive) 
   (let* ((assid
@@ -1309,7 +1382,9 @@ STUDENTID identifies the student, ASSIGNMENTID the assignment, and COURSEID the 
                      ('error (message "Caught exception while attaching %s: [%s]"filename err)))
                  (message "Cleaning up attach...")))))
   )
+;; Attachments:1 ends here
 
+;; [[file:org-lms.org::*Assignment Groups][Assignment Groups:1]]
 (defun org-lms-get-assignment-groups (&optional courseid)
   (unless courseid
     (setq courseid (org-lms-get-keyword "ORG_LMS_COURSEID")))
@@ -1320,7 +1395,9 @@ STUDENTID identifies the student, ASSIGNMENTID the assignment, and COURSEID the 
   (setq courseid (or courseid (org-lms-get-keyword "ORG_LMS_COURSEID")
                      ))
   (org-lms-canvas-request (format "courses/%s/assignment_groups/%s" courseid groupid) "GET"))
+;; Assignment Groups:1 ends here
 
+;; [[file:org-lms.org::*Assignments][Assignments:1]]
 (defun org-lms-post-assignment ()
   "Extract assignment data from HEADLINE.
   HEADLINE is an org-element object."
@@ -1441,7 +1518,9 @@ STUDENTID identifies the student, ASSIGNMENTID the assignment, and COURSEID the 
   (unless file (setq file (expand-file-name "assignments.el")))
   (org-lms-post-assignment)
   (org-lms-save-assignment-map file))
+;; Assignments:1 ends here
 
+;; [[file:org-lms.org::*Assignments][Assignments:2]]
 (defun org-lms-assignment-update ()
   "remove previous year's properties to make updating easier."
   (interactive)
@@ -1453,7 +1532,9 @@ STUDENTID identifies the student, ASSIGNMENTID the assignment, and COURSEID the 
 (defun org-lms-assignment-update-all ()
   (interactive)
   (org-map-entries #'org-lms-assignment-update "assignment"))
+;; Assignments:2 ends here
 
+;; [[file:org-lms.org::*Assignment Groups][Assignment Groups:1]]
 (defun org-lms-assignment-group-from-headline ()
   "Extract assignment group data from HEADLINE.
   HEADLINE is an org-element object."
@@ -1505,7 +1586,9 @@ STUDENTID identifies the student, ASSIGNMENTID the assignment, and COURSEID the 
                                     ))
            (response-data (or response nil)))
       response)))
+;; Assignment Groups:1 ends here
 
+;; [[file:org-lms.org::*Assignment Groups][Assignment Groups:2]]
 (defun org-lms-map-assignment-group-from-name (name)
   (interactive)
   (let* ((groups (org-lms-get-assignment-groups))
@@ -1518,8 +1601,10 @@ STUDENTID identifies the student, ASSIGNMENTID the assignment, and COURSEID the 
 
 
 ;;(org-lms-set-assignment-group `((name . "Tests")))
+;; Assignment Groups:2 ends here
 
 ;; huh is this deprecated?
+;; [[file:org-lms.org::*Setters -- headlineto announcement][Setters -- headlineto announcement:1]]
   ;; doesn't seem to be used at all 
 (defun org-lms-post-announcement (payload &optional courseid)
   "Create new announcement using PAYLOAD a data in course COURSEID."
@@ -1586,14 +1671,18 @@ STUDENTID identifies the student, ASSIGNMENTID the assignment, and COURSEID the 
     (if (plist-get response :url) 
         (browse-url (plist-get response :url)))
     response))
+;; Setters -- headlineto announcement:1 ends here
 
+;; [[file:org-lms.org::*Getter -- get-grading-standards][Getter -- get-grading-standards:1]]
 (defun org-lms-get-grading-standards (&optional courseid)
     "Retrieve Canvas grading standards for course with id COUSEID"
     (let* ((courseid (or courseid (org-lms-get-keyword "ORG_LMS_COURSEID")))
            (result
             (org-lms-canvas-request (format "courses/%s/grading_standards" courseid) "GET" )))
       result))
+;; Getter -- get-grading-standards:1 ends here
 
+;; [[file:org-lms.org::*Setters - post submissions from headlines][Setters - post submissions from headlines:1]]
 (defun org-lms-put-single-grade-from-headline (&optional studentid assignmentid courseid)
   "Get grade only (!) from student headline and post to Canvas LMS.
 If STUDENTID, ASSIGNMENTID and COURSEID are omitted, their values
@@ -1697,7 +1786,9 @@ working on this."
       (message "NO PROBLEMS HERE")
       ;; (message "Response: %s" comment-response )
       comment-response)))
+;; Setters - post submissions from headlines:1 ends here
 
+;; [[file:org-lms.org::*Set up local environment][Set up local environment:1]]
 ;;deprectaed!!!!!!
 (defun org-lms-setup ()
   "Merge  defs and students lists, and create table for later use.
@@ -1741,6 +1832,9 @@ variables must be set or errors will result."
   ;; (unless file
   ;;   (setq file "./students.json"))
   (apply org-lms-get-student-function (list file)))
+;; Set up local environment:1 ends here
+
+;; [[file:org-lms.org::*Assignments Table][Assignments Table:1]]
 
 (defun org-lms-assignments-table (&optional assignments students)
   "Return a 2-dimensional list suitable whose contents are org-mode table cells.
@@ -1786,7 +1880,9 @@ Resultant links allow quick access to the canvas web interface as well as the ma
                                          "Make Headlines"))))
 
     ))
+;; Assignments Table:1 ends here
 
+;; [[file:org-lms.org::*Principal headline-making functions][Principal headline-making functions:1]]
 ;; MAIN ORG-LMS UTILITY FUNCTIONS
 
 ;; attaching files to subtrees
@@ -2027,7 +2123,9 @@ resultant csv file has a certain shape, bu this may all be irrelevant now."
         (run-hooks 'ol-make-headings-final-hook)
         )) 
     (org-cycle-hide-drawers 'all)))
+;; Principal headline-making functions:1 ends here
 
+;; [[file:org-lms.org::*OBSOLETE github-specific function][OBSOLETE github-specific function:1]]
 ;; org make headings, but for github assignments
 (defun org-lms-make-headings-from-github (assignments students)
   "Create a set of headlines for grading.
@@ -2112,7 +2210,9 @@ the structure of the the alist, and the means of attachment
                               (org-mark-subtree)
                               (org-cycle nil))
                             ))students) ) ) assignments)))
+;; OBSOLETE github-specific function:1 ends here
 
+;; [[file:org-lms.org::*Attachments][Attachments:1]]
 ;; stolen from gnorb, but renamed to avoid conflicts
 (defun org-lms~attachment-list (&optional id)
   "Get a list of files (absolute filenames) attached to the
@@ -2128,7 +2228,9 @@ the structure of the the alist, and the means of attachment
                (expand-file-name f attach-dir))
              (org-attach-file-list attach-dir))))
       files)))
+;; Attachments:1 ends here
 
+;; [[file:org-lms.org::*Sending Subtrees][Sending Subtrees:1]]
 ;; temp fix for gh
 (defun org-lms~mail-text-only ()
   "org-mime-subtree and HTMLize"
@@ -2183,7 +2285,9 @@ you have not received a grade for work that you have handed in,
     (dolist (a attachments) (message "Attachment: %s" a) (mml-attach-file a (mm-default-file-encoding a) nil "attachment"))
     (message-goto-to)
     ))
+;; Sending Subtrees:1 ends here
 
+;; [[file:org-lms.org::*Mail and Post Multiple Trees][Mail and Post Multiple Trees:1]]
 (cl-defun org-lms-return-all-assignments (&optional (send-all nil) (also-mail nil) (post-to-lms t) )
   "By default mail all subtrees 'READY' to student recipients, unless SEND-ALL is non-nil.
 In that case, send all marked 'READY' or 'TODO'."
@@ -2292,6 +2396,7 @@ you have not received a grade for work that you have handed in,
     (dolist (a attachments) (message "Attachment: %s" a) (mml-attach-file a (mm-default-file-encoding a) nil "attachment"))
     (message-goto-to)
     ))
+;; Mail and Post Multiple Trees:1 ends here
 
 ;; more helpers
 (defun org-lms-mime-org-subtree-htmlize (&optional attachments)
@@ -2448,8 +2553,11 @@ The cursor is left in the TO field."
 		(mml-attach-file f))
 	      files)))))
 
+;; [[file:org-lms.org::*Even more Mail -- org-mime rewrite functions.][Even more Mail -- org-mime rewrite functions.:2]]
 
+;; Even more Mail -- org-mime rewrite functions.:2 ends here
 
+;; [[file:org-lms.org::*Set Grades and Overlays][Set Grades and Overlays:1]]
 ;; still imperfect, but good enough for me.  
 (defun org-lms-overlay-headings ()
   "Show grades at end of headlines that have a 'GRADE' property. If file keyword 'OL_USE_CHITS' is non-nil, also add a 'CHItS:' overlay."
@@ -2574,7 +2682,9 @@ The cursor is left in the TO field."
   ;;(org-lms-overlay-headings) 
 
   )
+;; Set Grades and Overlays:1 ends here
 
+;; [[file:org-lms.org::*More grading, for pass/fail][More grading, for pass/fail:1]]
 ;; helper function to set grades easily. Unfinished.
 (defun org-lms-pass ()
   "set the current tree to pass"
@@ -2593,7 +2703,9 @@ The cursor is left in the TO field."
   (ov-clear)
   (org-lms-overlay-headings)
   )
+;; More grading, for pass/fail:1 ends here
 
+;; [[file:org-lms.org::*Grade Report Tables][Grade Report Tables:1]]
 (defun org-lms-generate-tables ()
   "Generate a *grade report* buffer with a summary of the graded assignments
 Simultaneously write results to results.csv in current directory."
@@ -2740,7 +2852,9 @@ Simultaneously write results to results.csv in current directory."
   )
 
 ;; try writing reports for each students
+;; Grade Report Tables:1 ends here
 
+;; [[file:org-lms.org::*Github-related helper functions][Github-related helper functions:1]]
 ;; helper functions for github repos
 (defun org-lms~open-student-repo ()
   (interactive)
@@ -2754,8 +2868,10 @@ Simultaneously write results to results.csv in current directory."
         (org-attach-open)
       (org-lms~open-student-repo)
       )))
+;; Github-related helper functions:1 ends here
 
 (defun org-lms-map-assignments (&optional file )
+;; [[file:org-lms.org::*Transformer -- map org file to json][Transformer -- map org file to json:1]]
     "turn a buffer of assignment objects into a plist with relevant info enclosed."
 
     (let ((old-buffer (current-buffer)))
@@ -2892,7 +3008,9 @@ Simultaneously write results to results.csv in current directory."
     ))
 
 ;; (my-org-headline-create "test")
+;; Creator -- making assignments:1 ends here
 
+;; [[file:org-lms.org::*exporting lectures to reveal presentations and uploading to Quercus in a Lecture Folder][exporting lectures to reveal presentations and uploading to Quercus in a Lecture Folder:1]]
 ;; copied directly from ox-hugo;
 ;;this function is therefore copyright Kaushal Modi
 (defun org-lms--get-valid-subtree (&optional pred)
@@ -3136,13 +3254,19 @@ approach)."
                         )))
                 
                 ))))))))
+;; exporting lectures to reveal presentations and uploading to Quercus in a Lecture Folder:1 ends here
 
 (defun org-lms-inspect-object (method url headers)
     (restclient-http-do method url headers
      ))
+;; [[file:org-lms.org::*Debugging][Debugging:1]]
+;; Debugging:1 ends here
 
+;; [[file:org-lms.org::*Debugging][Debugging:2]]
 
+;; Debugging:2 ends here
 
+;; [[file:org-lms.org::*MAYBE Canvas-inspect][MAYBE Canvas-inspect:1]]
 (defun org-lms-canvas-inspect (query &optional request-type request-params)
   "Send QUERY to `org-lms-baseurl' with http request type `type', using `org-lms-token' to authenticate.
 
@@ -3197,7 +3321,9 @@ maybe key-type needs to be keyword though! Still a work in progress.
             (error (format "NO PAYLOAD: %s" canvas-err)))
           ) 
       (user-error "Please set a value for for `org-lms-token' in order to complete API calls"))))
+;; MAYBE Canvas-inspect:1 ends here
 
+;; [[file:org-lms.org::*Paste zoom recording links][Paste zoom recording links:1]]
 (defun org-lms-munge-zoom-link ()
   "Turn the zoom link from an email into an org list item"
   (interactive)
@@ -3208,7 +3334,9 @@ maybe key-type needs to be keyword though! Still a work in progress.
     (insert   (replace-regexp-in-string "^.*?\\(https://.*?\\) \\(Passcode: \\)\\(.*?\\) ?$"
                                         (concat "
 - [[\\1][Recording from " today ":]] \\2 *\\3*") s))))
+;; Paste zoom recording links:1 ends here
 
+;; [[file:org-lms.org::*Completely ad-hoc function designed exclusively for my own purposes][Completely ad-hoc function designed exclusively for my own purposes:1]]
 (defun org-lms-announcement-wim ()
   "move point to top level subtree, then, since we want 
 to keep announcement creation super-lightweight, *always* export that 
@@ -3270,7 +3398,9 @@ copy that subtree as slack text for posting to slack."
     ((pred (string= "syllabus")) (org-lms-post-syllabus))
     (- (progn (message "no section foind, please set the \"ORG_LMS_SECTION\" keyword.") nil)))
   )
+;; Completely ad-hoc function designed exclusively for my own purposes:1 ends here
 
+;; [[file:org-lms.org::*Preliminary mode defn][Preliminary mode defn:1]]
 ;; Minor mode definition. I'm not really using it right now, but it
 ;; might be a worthwhile improvement.
  
@@ -3296,6 +3426,8 @@ copy that subtree as slack text for posting to slack."
 
     (remove-hook 'org-ctrl-c-ctrl-c-hinal-hook 'org-lms-wim-wim))
   )
+;; Preliminary mode defn:1 ends here
 
+;; [[file:org-lms.org::*library closing][library closing:1]]
 (provide 'org-lms)
 ;;; org-lms ends here
