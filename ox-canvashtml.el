@@ -54,6 +54,7 @@ holding contextual information."
 ;; Replace the section function:1 ends here
 
 ;; [[file:ox-canvashtml.org::*Define some options here][Define some options here:1]]
+;; Define some options here:1 ends here
 
 ;; [[file:ox-canvashtml.org::*Unfortunately, have to replace the headline function too :-(][Unfortunately, have to replace the headline function too :-(:1]]
 ;;;; Headline

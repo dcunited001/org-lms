@@ -28,6 +28,8 @@ Source blocks are tangled using org-babel.
 
 #+end_src
 
+#+RESULTS:
+
 * COMMENT What does this package contain? 
 
 #+begin_src emacs-lisp :results list :tangle no

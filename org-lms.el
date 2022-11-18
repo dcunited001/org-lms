@@ -1317,6 +1317,7 @@ working on this."
 
 (defun org-lms-get-assignment-submissions ( assignmentid &optional courseid)
   "Get all submisisons belonging to ASSIGNMENTID in optional COURSE."
+;; [[file:org-lms.org::*Submissions][Submissions:1]]
 
   (setq courseid (or courseid (org-lms-get-keyword "ORG_LMS_COURSEID") (plist-get org-lms-course)))
   (org-lms-canvas-request
@@ -2862,65 +2863,68 @@ Simultaneously write results to results.csv in current directory."
 (defun org-lms~open-attachment-or-repo () 
   (interactive)
   (let* ((attach-dir (org-attach-dir t))
-         (files (org-attach-file-list attach-dir)))
+         (files (org-lms-attach-file-list)))
     (if (> (length files) 0 )
         (org-attach-open)
       (org-lms~open-student-repo)
       )))
 ;; Github-related helper functions:1 ends here
 
-(defun org-lms-map-assignments (&optional file )
 ;; [[file:org-lms.org::*Transformer -- map org file to json][Transformer -- map org file to json:1]]
+  (defun org-lms-map-assignments (&optional file )
     "turn a buffer of assignment objects into a plist with relevant info enclosed."
 
     (let ((old-buffer (current-buffer)))
-      (with-temp-buffer 
-        (if file (insert-file-contents (expand-file-name file))
-          (insert-buffer-substring-no-properties old-buffer))
-        ;; (insert-file-contents file)
-        (org-mode)
-        (let* ((id (org-lms-get-keyword "ORG_LMS_COURSEID"))
-               (results '())
-               (org-use-tag-inheritance nil)
-               )
-         (message "BUFFER STRING SHOULD BE: %s" (buffer-string))
-          (setq results 
-                (org-map-entries
-                 (lambda ()
-                   (let* ((rubric )
-                          (name (nth 4 (org-heading-components)))
-                          (a-symbol (intern (or (org-entry-get nil  "ORG_LMS_ANAME") 
-                                                (replace-regexp-in-string "[ \n\t]" "" name)))))
-                     (setq rubric  (car (org-map-entries
-                                         (lambda ()
-                                           (let ((e (org-element-at-point )))
-                                             ;; in case at some point we would rather have thewhole element (scary)
-                                             ;; (org-element-at-point)
-                                             (buffer-substring-no-properties
-                                              (org-element-property :contents-begin e)
-                                              (-  (org-element-property :contents-end e) 1))
-                                             ))
-                                         "rubric" 'tree))  )
-                     ;; hopefully nothing broeke here w/ additions <2018-11-16 Fri>
-                     `(,a-symbol .  (:courseid ,id :canvasid ,(org-entry-get nil "CANVASID")
-                                               :due-at ,(org-entry-get nil "DUE_AT") :html_url ,(org-entry-get nil "CANVAS_HTML_URL")
-                                               :name ,(nth 4 (org-heading-components)  ) 
-                                               :submission_type ,(or (org-entry-get nil "SUBMISSION_TYPE") "online_upload") 
-                                               :published ,(org-entry-get nil "OL_PUBLISH")
-                                               :submission_url ,(org-entry-get nil "CANVAS_SUBMISSION_URL")
-                                               :basecommit ,(org-entry-get nil "BASECOMMIT")
-                                               :org_lms_email_comments ,(org-entry-get nil "ORG_LMS_MAIL_COMMENTS")
-                                               :org_lms_canvas_comments ,(org-entry-get nil "ORG_LMS_CANVAS_COMMENTS")
-                                               :assignment_number ,(org-entry-get nil "ORG_LMS_NUMBER")
-                                               :grade_type "letter_grade" ;; oops fix this!
-                                               :assignment-type ,(org-entry-get nil "ASSIGNMENT_TYPE")
-                                               :directory ,(or (org-entry-get nil "OL_DIRECTORY")
-                                                               (downcase
-                                                                (replace-regexp-in-string "[\s]" "-" name )))
-                                               :rubric ,rubric)))
-                                               ) "assignment"))
-          ;;(message "RESULT IS: %s" results)
-          results))) )
+      (save-window-excursion
+        (with-temp-buffer 
+          (if file (find-file file) ;; (insert-file-contents (expand-file-name file))
+            old-buffer;; (insert-buffer-substring-no-properties old-buffer)
+            )
+          ;; (insert-file-contents file)
+          (org-mode)
+          (let* ((id (org-lms-get-keyword "ORG_LMS_COURSEID"))
+                 (results '())
+                 (org-use-tag-inheritance nil)
+                 )
+            (message "BUFFER STRING SHOULD BE: %s" (buffer-string))
+            (setq results 
+                  (org-map-entries
+                   (lambda ()
+                     (let* ((rubric )
+                            (name (nth 4 (org-heading-components)))
+                            (a-symbol (intern (or (org-entry-get nil  "ORG_LMS_ANAME") 
+                                                  (replace-regexp-in-string "[ \n\t]" "" name)))))
+                       (setq rubric  (car (org-map-entries
+                                           (lambda ()
+                                             (let ((e (org-element-at-point )))
+                                               ;; in case at some point we would rather have thewhole element (scary)
+                                               ;; (org-element-at-point)
+                                               (buffer-substring-no-properties
+                                                (org-element-property :contents-begin e)
+                                                (-  (org-element-property :contents-end e) 1))
+                                               ))
+                                           "rubric" 'tree))  )
+                       ;; hopefully nothing broeke here w/ additions <2018-11-16 Fri>
+                       `(,a-symbol .  (:courseid ,id :canvasid ,(org-entry-get nil "CANVASID")
+                                                 :due-at ,(org-entry-get nil "DUE_AT") :html_url ,(org-entry-get nil "CANVAS_HTML_URL")
+                                                 :name ,(nth 4 (org-heading-components)  ) 
+                                                 :submission_type ,(or (org-entry-get nil "SUBMISSION_TYPE") "online_upload") 
+                                                 :published ,(org-entry-get nil "OL_PUBLISH")
+                                                 :submission_url ,(org-entry-get nil "CANVAS_SUBMISSION_URL")
+                                                 :basecommit ,(org-entry-get nil "BASECOMMIT")
+                                                 :org_lms_email_comments ,(org-entry-get nil "ORG_LMS_MAIL_COMMENTS")
+                                                 :org_lms_canvas_comments ,(org-entry-get nil "ORG_LMS_CANVAS_COMMENTS")
+                                                 :assignment_number ,(org-entry-get nil "ORG_LMS_NUMBER")
+                                                 :grade_type "letter_grade" ;; oops fix this!
+                                                 :assignment-type ,(org-entry-get nil "ASSIGNMENT_TYPE")
+                                                 :org-id ,(org-id-get-create)
+                                                 :directory ,(or (org-entry-get nil "OL_DIRECTORY")
+                                                                 (downcase
+                                                                  (replace-regexp-in-string "[\s]" "-" name )))
+                                                 :rubric ,rubric)))
+                     ) "assignment"))
+            ;;(message "RESULT IS: %s" results)
+            results)))) )
 
   (defun org-lms-save-assignment-map (&optional file)
     "Map assignments and save el object to FILE, \"assignments.el\" by default."
@@ -2939,7 +2943,9 @@ Simultaneously write results to results.csv in current directory."
   (cl-assert (eq (point) (point-min)))
   (read (current-buffer)))
 )
+;; Transformer -- map org file to json:1 ends here
 
+;; [[file:org-lms.org::*Creator -- making assignments][Creator -- making assignments:1]]
 ;; (defun my-org-element-create (title)
 ;;   (interactive)
 ;;   (let* ((email t)
@@ -3430,3 +3436,4 @@ copy that subtree as slack text for posting to slack."
 ;; [[file:org-lms.org::*library closing][library closing:1]]
 (provide 'org-lms)
 ;;; org-lms ends here
+;; library closing:1 ends here
