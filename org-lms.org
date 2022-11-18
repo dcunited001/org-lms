@@ -2618,8 +2618,8 @@ resultant csv file has a certain shape, bu this may all be irrelevant now."
                             ("COURSEID" . ,courseid)
                             ("BASECOMMIT" . ,basecommit) ;; it would be better to keep this in the parent
                             ("ORG_LMS_ASSIGNMENT_DIRECTORY" . ,directory)
-                            ;; ("MAIL_CC" . "matt.price@utoronto.ca")
-                            ("MAIL_REPLY" . "matt.price@utoronto.ca")
+                            ;; ("MAIL_CC" . (or user-mail-address "matt.price@utoronto.ca"))
+                            ("MAIL_REPLY" . (or user-mail-address "matt.price@utoronto.ca"))
                             ("MAIL_SUBJECT" .
                              ,(format "%sComments on Assignment \"%s\" (%s %s)"
                                       (if coursenum
@@ -2818,7 +2818,7 @@ the structure of the the alist, and the means of attachment
                                         prs)
                               )
                             ;; (org-set-property "MAIL_CC" "matt.price@utoronto.ca")
-                            (org-set-property "MAIL_REPLY" "matt.price@utoronto.ca")
+                            (org-set-property "MAIL_REPLY" (or user-mail-address "matt.price@utoronto.ca"))
                             (org-set-property "MAIL_SUBJECT"
                                               (format "Comments on %s Assignment (%s %s)"
                                                       (mwp-org-get-parent-headline) nname lname ))
@@ -2898,7 +2898,7 @@ resultant csv file has a certain shape, bu this may all be irrelevant now."
                             ("STUDENTID" . ,id)
                             ("COURSEID" . ,courseid)
                             ;; ("MAIL_CC" . "matt.price@utoronto.ca")
-                            ("MAIL_REPLY" . "matt.price@utoronto.ca")
+                            ("MAIL_REPLY" . (user-mail-address "matt.price@utoronto.ca"))
                             ("MAIL_SUBJECT" .
                              ,(format "%sComments on Participation \"%s\" (%s %s)"
                                       (if coursenum
@@ -3618,7 +3618,7 @@ Simultaneously write results to results.csv in current directory."
                          ("MAIL_TO" . ,email)
                          ("GITHUB" . ,github)
                          ;; ("STUDENTID" . ,id)
-                         ("MAIL_REPLY" . "matt.price@utoronto.ca")
+                         ("MAIL_REPLY" . (user-mail-address "matt.price@utoronto.ca"))
                          ("MAIL_SUBJECT" .
                           ,(format "%s Grades Summary"
                                    (if coursenum
