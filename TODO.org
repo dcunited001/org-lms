@@ -1,0 +1,25 @@
+#+title: Todo
+
+* Testing
+
+*** TODO project needs a VCR ... badly
+
++ this project seems really hard to support. i can't imagine that Instructure
+  has "continuous integration at scale" with their clientelle. updates are
+  likely seasonal, so the distribution of deployed version likely varies
+  dramatically.
+  - sadly, that makes this project a fools' errand ... unless Instructure was to
+    design some product/plugins like obsidian/notion to allow for updates of
+    course content using a Markdown editor
+  - of course, markdown is for the plebs ... who can keep their grubby paws off
+    my org-mode lulz. markdown works at scale though.
+  - something like this (but more accessible) would be a godsend for
+    teachers/faculty. there is no more efficient way to interact with content
+    then via plain text. all hail emacs-lisp.
+
++ just started looking at this, but if there's a public test instance of the
+  Canvas API with some standard sets of data, then scripts could autoupdate API
+  requests/responses to create data for test fixtures.
+  - when the API responses change (or routes change), then tests break.
+
+* Exploration
