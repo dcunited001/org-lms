@@ -1,6 +1,7 @@
 #+TODO: ACTION(a) STARTED(s) WAITING(w) NEEDSHELP(n) MISSING(m) | DONE(d) WONTDO(o)
-#+PROPERTY: header-args    :tangle org-lms.el
+#+PROPERTY: header-args :tangle org-lms.el :comments link
 #+ORG_LMS_COURSE: wildwater
+
 I'm moving this package to a literate programming format to make it easier to maintain.
 
 Source blocks are tangled using org-babel.
@@ -13,18 +14,17 @@ Source blocks are tangled using org-babel.
 * Package intro
 
 #+begin_src emacs-lisp
-  ;;; org-lms -- Summary
-  ;;;
-  ;;; Commentary:
-  ;;; Library to facilitate marking assignments and interacting
-  ;;; with the Canvas LMS (https://canvas.instructure.com/) via its
-  ;;; JSON API (https://canvas.instructure.com/doc/api/).
-  ;;;
-  ;;; Functionality is still rough and design is idiosyncratic. I hope to
-  ;;; one day design a more robusti nterface but... who know? 
+;;; org-lms -- Summary
+;;;
+;;; Commentary:
+;;; Library to facilitate marking assignments and interacting
+;;; with the Canvas LMS (https://canvas.instructure.com/) via its
+;;; JSON API (https://canvas.instructure.com/doc/api/).
+;;;
+;;; Functionality is still rough and design is idiosyncratic. I hope to
+;;; one day design a more robust interface but... who knows? :)
 
-  ;;; Code:
-
+;;; Code:
 
 #+end_src
 
@@ -62,7 +62,7 @@ Source blocks are tangled using org-babel.
 THere's some stuff I should get rid of. Trying to track it down.  
 
 #+begin_src emacs-lisp
-  (define-obsolete-function-alias 'org-lms-send-subtree-with-attachments
+(define-obsolete-function-alias 'org-lms-send-subtree-with-attachments
     'org-lms--send-subtree-with-attachments "a pretty long time ago")
 (define-obsolete-function-alias 'org-lms-mail-all-undone 
     'org-lms-mail-all "a pretty long time ago")
@@ -2216,23 +2216,22 @@ Also, looks like it isn't reading heading properties before posting!! Needs to b
 *** troubleshooting
 #+begin_src emacs-lisp :tangle no
 
-  ;;; Code:
+;;; Code:
 
-  ;; something else
+;; something else
 
+(json-encode '(("assignment[description]" . "<p>\nThis kind of amazing-sounding talk is happenin...") ("assignment[submission_types]" . "none") ("assignment[grading_type]" . "letter_grade") ))
 
-  (json-encode '(("assignment[description]" . "<p>\nThis kind of amazing-sounding talk is happenin...") ("assignment[submission_types]" . "none") ("assignment[grading_type]" . "letter_grade") ))
-
-
-  (json-encode `(("assignment[description]" . "<p>\nThis kind of amazing-sounding talk is happenin...") ("assignment[submission_types]" . "none") ("assignment[grading_type]" . "letter_grade")(descrpition . "" ) (key1 . "value1") ,(if nil t '("" . ""))))
-
-
+(json-encode `(("assignment[description]" . "<p>\nThis kind of amazing-sounding talk is happenin...") ("assignment[submission_types]" . "none") ("assignment[grading_type]" . "letter_grade")(descrpition . "" ) (key1 . "value1") ,(if nil t '("" . ""))))
 #+end_src
 
-to#+RESULTS:
+#+RESULTS:
 : {"assignment[description]":"<p>\nThis kind of amazing-sounding talk is happenin...","assignment[submission_types]":"none","assignment[grading_type]":"letter_grade","descrpition":"","key1":"value1","":""}
+
 ** Grading Standards
+
 Unfortunately, at Canadian schools we need to set the grading standard for every single assignment :frowning:  TThis should be another keyword I guess :-(. However... once again I don't seem to have permission to set the grading standards fro mthe API :-(; and I can't evne seme to *get* them, which is frustrating.    
+
 *** Getter -- get-grading-standards
 #+begin_src emacs-lisp
 (defun org-lms-get-grading-standards (&optional courseid)

@@ -1,4 +1,5 @@
-#+PROPERTY: header-args    :tangle yes 
+#+PROPERTY: header-args:emacs-lisp :tangle ox-canvashtml.el :comments link
+
 * Some background about Quercus CSS
 :PROPERTIES:
 :header-args: :tangle no
