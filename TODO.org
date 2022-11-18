@@ -22,4 +22,10 @@
   requests/responses to create data for test fixtures.
   - when the API responses change (or routes change), then tests break.
 
+*** TODO finish trying to detangle
+
++ or remove tangling. it's nice, but you can't use most emacs-lisp-mode
+  features. i regret doing it in my configs. it's great for learning, but also
+x  horrible for learning emacs-lisp/etc
+
 * Exploration
